@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      0.7.0
+// @version      0.8.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -15,7 +15,7 @@
 	let user_region = '';
 
 	async function addButton() {
-		console.log('Attempt add button');
+		// console.log('Attempt add button');
 		let friendRegionBt = document.createElement("button");
 		friendRegionBt.innerHTML = "Show #Friends/Region";
 		friendRegionBt.style.marginLeft = "5px";
@@ -205,4 +205,24 @@
     hidDiv.appendChild(profileButton);
 
     document.querySelector(".pageSidebarView").appendChild(hidDiv);
+})();
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Change Inbox button to default to General tab
+(() => {
+	let inbox = document.querySelector('#hgbar_messages');
+	// inbox.removeAttribute('onclick');
+	inbox.onclick = (async ()=>{
+		messenger.UI.notification.showPopup();
+		await sleep(420);
+		let draws = document.querySelectorAll('.message.daily_draw.notification.ballot')
+		draws.forEach((msg)=>{
+			msg.remove();
+		})
+		document.querySelector('.tabs [data-tab="daily_draw"]').remove();
+		messenger.UI.notification.showTab('general');
+	})
 })();
