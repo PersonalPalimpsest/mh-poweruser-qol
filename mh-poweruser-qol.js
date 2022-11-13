@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      0.6
+// @version      0.7.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -11,75 +11,97 @@
 
 // Friend per region summary view
 (() => {
-    var xhr = new XMLHttpRequest();
-    xhr.open(
-        "POST", `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=Travel&uh=${user.unique_hash}`);
-    xhr.onload = function () {
-        var friends = JSON.parse(xhr.responseText).page.tabs[0].regions;
-        var masterArr = [];
-        var user_region = '';
-        //console.log(user.environment_name);
-        for (var reg in friends) {
-            var regObj = {};
-            regObj.type = friends[reg].type;
-            regObj.name = friends[reg].name;
-            regObj.frdCt = friends[reg].num_friends;
-            for (var loc in friends[reg].environments) {
-                    if (friends[reg].environments[loc].name == user.environment_name) {
-                        //console.log(friends[reg].environments[loc].name);
-                        //console.log(user.environment_name);
-                        //console.log(regObj.name);
-                        user_region = regObj.name;
-                    }
-                }
-             
-            masterArr.push(regObj);
-            //console.log(regObj);
-        }
-        //console.log(user_region);
-        masterArr.sort((a, b) => b.frdCt - a.frdCt);   
-        
-        function makeList() {
-            var ol = document.createElement('ol');
-            ol.id = "ol";
-            ol.style.display = "grid";
-            ol.style.gridTemplateColumns = "1fr 1fr";
-            ol.style.textAlign = "center";
-            //console.log('Hello');
-            //console.log(masterArr);
-            document.querySelector('.campPage-trap-friendContainer').insertBefore(ol, document.querySelector('.campPage-trap-friendList'));
+	let regionList = [];
+	let user_region = '';
 
-            masterArr.forEach(function (reg) {
-                let li1 = document.createElement('li');
-                li1.innerHTML += reg.name;
-                if (reg.frdCt <= 10) li1.style.color = "rgba(69,69,69,0.420)";
-                if (reg.name == user_region) li1.style.color = "rgb(255,0,0)";
-                ol.appendChild(li1);
+	async function addButton() {
+		console.log('Attempt add button');
+		let friendRegionBt = document.createElement("button");
+		friendRegionBt.innerHTML = "Show #Friends/Region";
+		friendRegionBt.style.marginLeft = "5px";
+		friendRegionBt.style.padding = "0px 3px";
+		friendRegionBt.style.fontSize = "inherit";
+		friendRegionBt.onclick = (()=>{
+			if (document.querySelector('#ol')) {
+				document.querySelector('#ol').remove();
+			} else {
+				renderList(regionList);
+			}
+		});
+		document.querySelector(".campPage-trap-friendContainer .label").insertBefore(friendRegionBt, document.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
+	}
 
-                let li2 = document.createElement('li');
-                li2.innerHTML += reg.frdCt;
-                if (reg.frdCt <= 10) li2.style.color = "rgba(69,69,69,0.420)";
-                if (reg.name == user_region) li2.style.color = "rgb(255,0,0)";
-                ol.appendChild(li2);
-            });
-        }
-        var frdSum = document.createElement("button");
-        frdSum.innerHTML = "Show #Friends/Region";
-        frdSum.style.marginLeft = "5px";
-        frdSum.style.padding = "0px 3px";
-        frdSum.style.fontSize = "inherit";
-        frdSum.addEventListener("click", function () {
-            if (document.querySelector('#ol')) {
-                document.querySelector('#ol').remove();
-            } else {
-                makeList();
-            }
-        });
-        document.querySelector(".campPage-trap-friendContainer .label").insertBefore(frdSum, document.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"))
-        //temporary fix to move button to sidebar document.querySelector(".pageSidebarView").appendChild(frdSum)
-    };
-    xhr.send();
+	function renderList(regionList) {
+		let ol = document.createElement('ol');
+		ol.id = "ol";
+		ol.style.display = "grid";
+		ol.style.gridTemplateColumns = "1fr 1fr";
+		ol.style.textAlign = "center";
+		document.querySelector('.campPage-trap-friendContainer').insertBefore(ol, document.querySelector('.campPage-trap-friendList'));
+
+		regionList.forEach((region)=>{
+			let li1 = document.createElement('li');
+			li1.innerHTML += region.name;
+			if (region.frdCt <= 10) li1.style.color = "rgba(69,69,69,0.420)";
+			if (region.name == user_region) li1.style.color = "rgb(255,0,0)";
+			ol.appendChild(li1);
+
+			let li2 = document.createElement('li');
+			li2.innerHTML += region.frdCt;
+			if (region.frdCt <= 10) li2.style.color = "rgba(69,69,69,0.420)";
+			if (region.name == user_region) li2.style.color = "rgb(255,0,0)";
+			ol.appendChild(li2);
+		});
+	}
+
+	async function getRegionList(regions) {
+		for (const region in regions) {
+			let regObj = {};
+			regObj.name = regions[region].name;
+			regObj.frdCt = regions[region].num_friends;
+			for (const loc in regions[region].environments) {
+				regions[region].environments[loc].name == user.environment_name ? user_region = regObj.name : null;
+			}
+			regionList.push(regObj);
+		}
+		await regionList.sort((a, b) => b.frdCt - a.frdCt);
+		addButton();
+	}
+
+	function postReq(url, form) {
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open("POST", url, true);
+			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhr.onreadystatechange = function () {
+				if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+					resolve(this);
+				}
+			};
+			xhr.onerror = function () {
+				reject(this);
+			};
+			xhr.send(form);
+		});
+	};
+
+	let xhr = new XMLHttpRequest();
+	xhr.open(
+		"POST", `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=Travel&uh=${user.unique_hash}`);
+	xhr.onload = function () {
+		let regions = JSON.parse(xhr.responseText).page.tabs[0].regions;
+		getRegionList(regions);
+	};
+	xhr.send();
+
+	const campButton = document.querySelector('.camp .mousehuntHud-menu-item.root');
+	campButton.onclick = (()=>{
+		setTimeout(()=>{
+			addButton();
+		},1000)
+	});
 })();
+
 
 // Hunter ID quick-nav
 (function hunterIdNav() {
