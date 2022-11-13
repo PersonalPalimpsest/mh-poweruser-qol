@@ -9,3 +9,4 @@ Functions:
     b. Known issue: current location highlighting doesn't work if in the Twisted side of the the LG complex
 
 2. Adds quick-search by Hunter ID to the sidebar
+3. Inbox button skips to General tab and deletes Daily Draw elements.
