@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      1.0.0
+// @version      1.0.1
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -46,7 +46,6 @@
 			}
 		});
 		let onlineTxt = friendRegionBtn.querySelector("a span");
-		console.log(onlineTxt);
 		onlineTxt.innerHTML = onlineTxt.innerHTML.replace(')',', click to show where)')
 		friendLabel.insertBefore(friendRegionBtn, friendLabel.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
 	}
