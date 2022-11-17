@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      0.8.0
+// @version      0.9.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -105,6 +105,9 @@
 
 // Hunter ID quick-nav
 (function hunterIdNav() {
+	document
+		.querySelectorAll(".tsitu-hunter-id-nav")
+		.forEach(el => el.remove());
 
     function postReq(url, form) {
         return new Promise((resolve, reject) => {
@@ -139,15 +142,17 @@
 
     const hidDiv = document.createElement("div");
     hidDiv.id = "tsitu-hunter-id-nav-ui";
-    hidDiv.style.display = "grid";
-    hidDiv.style.gridTemplateColumns = "40% 35% 25%";
+    hidDiv.style.flex = "inherit";
+	hidDiv.style.display = "flex";
 
     const hidInput = document.createElement("input");
     hidInput.type = "search";
     hidInput.id = "tsitu-input-hid";
-    hidInput.style.fontSize = "inherit";
+    hidInput.style.borderStyle = "groove";
+	hidInput.style.width = "70px";
+	hidInput.style.flex = "auto";
     hidInput.placeholder = "Hunter ID";
-    hidInput.setAttribute("accesskey", "q");
+    hidInput.setAttribute("accesskey", "s");
     hidInput.addEventListener("keydown", function(event) {
         if(event.code == 'Enter') sendSBButton.click()
         else if(event.code == 'NumpadEnter') sendSBButton.click();
@@ -156,7 +161,10 @@
     const sendSBButton = document.createElement("button");
     sendSBButton.style.padding = "3px";
     sendSBButton.style.marginLeft = "-3px";
+	sendSBButton.style.borderRadius = "0";
+    sendSBButton.style.borderStyle = "groove";
     sendSBButton.style.fontSize = "inherit";
+	sendSBButton.style.flex = "initial";
     sendSBButton.innerText = "Send SB+";
     sendSBButton.onclick = function () {
         const hunterId = hidInput.value;
@@ -186,7 +194,10 @@
     const profileButton = document.createElement("button");
     profileButton.style.padding = "3px";
     profileButton.style.marginLeft = "-3px";
+	profileButton.style.borderRadius = "0 0 3px 0";
+    profileButton.style.borderStyle = "groove";
     profileButton.style.fontSize = "inherit";
+	profileButton.style.flex = "initial";
     profileButton.innerText = "Profile";
     profileButton.onclick = function () {
         const val = hidInput.value;
@@ -204,7 +215,28 @@
     hidDiv.appendChild(sendSBButton);
     hidDiv.appendChild(profileButton);
 
-    document.querySelector(".pageSidebarView").appendChild(hidDiv);
+	let sidebar = document.querySelector(".pageSidebarView");
+	let ticker = document.querySelector(".mousehuntHeaderView-newsTicker");
+
+	let appendPoint = ticker; // choose the place you want the hunter ID input to be
+	if (appendPoint == ticker) {
+		let header = ticker.parentElement;
+
+		let oldTicker = ticker;
+		oldTicker.style.flex = "auto";
+
+		let comboDiv = document.createElement("div");
+		comboDiv.style.display = "flex";
+		comboDiv.style.flexDirection = "row";
+		comboDiv.style.width = "inherit";
+
+		comboDiv.appendChild(oldTicker);
+		comboDiv.appendChild(hidDiv);
+		header.appendChild(comboDiv);
+	}
+	else {
+		sidebar.appendChild(hidDiv);
+	}
 })();
 
 function sleep(ms) {
