@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      0.9.0
+// @version      1.0.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -14,21 +14,41 @@
 	let regionList = [];
 	let user_region = '';
 
+	// async function addButton() {
+	// 	// console.log('Attempt add button');
+	// 	let friendRegionBt = document.createElement("button");
+	// 	friendRegionBt.innerHTML = "Show #Friends/Region";
+	// 	friendRegionBt.style.marginLeft = "5px";
+	// 	friendRegionBt.style.padding = "0px 3px";
+	// 	friendRegionBt.style.fontSize = "inherit";
+	// 	friendRegionBt.onclick = (()=>{
+	// 		if (document.querySelector('#ol')) {
+	// 			document.querySelector('#ol').remove();
+	// 		} else {
+	// 			renderList(regionList);
+	// 		}
+	// 	});
+	// 	document.querySelector(".campPage-trap-friendContainer .label").insertBefore(friendRegionBt, document.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
+	// }
+
 	async function addButton() {
-		// console.log('Attempt add button');
-		let friendRegionBt = document.createElement("button");
-		friendRegionBt.innerHTML = "Show #Friends/Region";
-		friendRegionBt.style.marginLeft = "5px";
-		friendRegionBt.style.padding = "0px 3px";
-		friendRegionBt.style.fontSize = "inherit";
-		friendRegionBt.onclick = (()=>{
+		let friendLabel = document.querySelector(".campPage-trap-friendContainer .label");
+		// let friendContainer = friendLabel.parentElement;
+		let friendRegionBtn = document.createElement("a");
+		for (let i=0; i<2; i++) {
+			friendRegionBtn.appendChild(friendLabel.childNodes[0]);
+		}
+		friendRegionBtn.onclick = (()=>{
 			if (document.querySelector('#ol')) {
 				document.querySelector('#ol').remove();
 			} else {
 				renderList(regionList);
 			}
 		});
-		document.querySelector(".campPage-trap-friendContainer .label").insertBefore(friendRegionBt, document.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
+		let onlineTxt = friendRegionBtn.querySelector("a span");
+		console.log(onlineTxt);
+		onlineTxt.innerHTML = onlineTxt.innerHTML.replace(')',', click to show where)')
+		friendLabel.insertBefore(friendRegionBtn, friendLabel.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
 	}
 
 	function renderList(regionList) {
