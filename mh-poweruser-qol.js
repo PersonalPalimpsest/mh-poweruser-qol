@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      1.0.1
+// @version      1.1.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -236,8 +236,9 @@
 
 	let sidebar = document.querySelector(".pageSidebarView");
 	let ticker = document.querySelector(".mousehuntHeaderView-newsTicker");
+	let header = document.querySelector('.mousehuntHeaderView-dropdownContainer');
 
-	let appendPoint = ticker; // choose the place you want the hunter ID input to be
+	let appendPoint = header; // choose the place you want the hunter ID input to be
 	if (appendPoint == ticker) {
 		let header = ticker.parentElement;
 
@@ -253,8 +254,17 @@
 		comboDiv.appendChild(hidDiv);
 		header.appendChild(comboDiv);
 	}
-	else {
+	else if (appendPoint == sidebar) {
 		sidebar.appendChild(hidDiv);
+	}
+	else if (appendPoint == header) {
+		hidDiv.classList += 'menuItem';
+		hidDiv.style.padding = '0px';
+		header.prepend(hidDiv);
+
+		header.parentElement.querySelector('.myProfile').remove();
+		header.parentElement.querySelector('.chat').remove();
+		header.parentElement.querySelector('.premiumShop').remove();
 	}
 })();
 
