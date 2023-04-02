@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      1.1.0
+// @version      1.2.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -58,17 +58,29 @@
 		ol.style.textAlign = "center";
 		document.querySelector('.campPage-trap-friendContainer').insertBefore(ol, document.querySelector('.campPage-trap-friendList'));
 
+		const cssSheets = window.document.styleSheets;
+			let darkMode = false;
+			for (let sheet of cssSheets) {
+				if (sheet.href) if (sheet.href.includes('potato')) darkMode = true;
+			}
+
 		regionList.forEach((region)=>{
 			let li1 = document.createElement('li');
 			li1.innerHTML += region.name;
-			if (region.frdCt <= 10) li1.style.color = "rgba(69,69,69,0.420)";
 			if (region.name == user_region) li1.style.color = "rgb(255,0,0)";
+			else {
+				if (darkMode) li1.style.filter = "invert()";
+				if (region.frdCt < 8) li1.style.color = "rgba(69,69,69,0.420)";
+			}
 			ol.appendChild(li1);
 
 			let li2 = document.createElement('li');
 			li2.innerHTML += region.frdCt;
-			if (region.frdCt <= 10) li2.style.color = "rgba(69,69,69,0.420)";
 			if (region.name == user_region) li2.style.color = "rgb(255,0,0)";
+			else {
+				if (darkMode) li2.style.filter = "invert()";
+				if (region.frdCt < 8) li2.style.color = "rgba(69,69,69,0.420)";
+			}
 			ol.appendChild(li2);
 		});
 	}
