@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MouseHunt - Poweruser QoL scripts
 // @namespace    https://greasyfork.org/en/users/900615-personalpalimpsest
-// @version      1.2.0
+// @version      1.3.0
 // @description  dabbling into scripting to solve little pet peeves
 // @author       asterios
 // @match        http://www.mousehuntgame.com/*
@@ -12,6 +12,7 @@
 // Friend per region summary view
 (() => {
 	let regionList = [];
+	let regions = [];
 	let user_region = '';
 
 	// async function addButton() {
@@ -42,7 +43,7 @@
 			if (document.querySelector('#ol')) {
 				document.querySelector('#ol').remove();
 			} else {
-				renderList(regionList);
+				renderList();
 			}
 		});
 		let onlineTxt = friendRegionBtn.querySelector("a span");
@@ -50,7 +51,9 @@
 		friendLabel.insertBefore(friendRegionBtn, friendLabel.querySelector(".campPage-trap-friendContainer-toggleFriendsButton"));
 	}
 
-	function renderList(regionList) {
+	async function renderList() {
+		await getRegionList();
+
 		let ol = document.createElement('ol');
 		ol.id = "ol";
 		ol.style.display = "grid";
@@ -63,14 +66,14 @@
 			for (let sheet of cssSheets) {
 				if (sheet.href) if (sheet.href.includes('potato')) darkMode = true;
 			}
-
+		// console.log(regionList);
 		regionList.forEach((region)=>{
 			let li1 = document.createElement('li');
 			li1.innerHTML += region.name;
 			if (region.name == user_region) li1.style.color = "rgb(255,0,0)";
 			else {
 				if (darkMode) li1.style.filter = "invert()";
-				if (region.frdCt < 8) li1.style.color = "rgba(69,69,69,0.420)";
+				// if (region.frdCt < 8) li1.style.color = "rgba(69,69,69,0.420)";
 			}
 			ol.appendChild(li1);
 
@@ -79,62 +82,82 @@
 			if (region.name == user_region) li2.style.color = "rgb(255,0,0)";
 			else {
 				if (darkMode) li2.style.filter = "invert()";
-				if (region.frdCt < 8) li2.style.color = "rgba(69,69,69,0.420)";
+				// if (region.frdCt < 8) li2.style.color = "rgba(69,69,69,0.420)";
 			}
 			ol.appendChild(li2);
 		});
 	}
 
-	async function getRegionList(regions) {
-		for (const region in regions) {
-			let regObj = {};
-			regObj.name = regions[region].name;
-			regObj.frdCt = regions[region].num_friends;
-			for (const loc in regions[region].environments) {
-				regions[region].environments[loc].name == user.environment_name ? user_region = regObj.name : null;
-			}
-			regionList.push(regObj);
-		}
-		await regionList.sort((a, b) => b.frdCt - a.frdCt);
-		addButton();
-	}
-
-	function postReq(url, form) {
+	async function getRegionList() {
+		console.log('Getting regions and region list');
 		return new Promise((resolve, reject) => {
 			const xhr = new XMLHttpRequest();
-			xhr.open("POST", url, true);
-			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			xhr.onreadystatechange = function () {
-				if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-					resolve(this);
+			xhr.open("POST", `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=Travel&uh=${user.unique_hash}`);
+			xhr.onload = function () {
+				if (xhr.status === 200) {
+					regions = JSON.parse(xhr.responseText).page.tabs[0].regions;
+					resolve(regions);
+					console.log(regions);
+
+					for (const region in regions) {
+						const existingObj = regionList.find(obj => obj.name === regions[region].name);
+
+						if (existingObj) {
+							existingObj.frdCt = regions[region].num_friends;
+						} else {
+							// Create and add new regObj if it doesn't exist
+							let regObj = {};
+							regObj.name = regions[region].name;
+							regObj.frdCt = regions[region].num_friends;
+							for (const loc in regions[region].environments) {
+								regions[region].environments[loc].name == user.environment_name ? user_region = regObj.name : null;
+							}
+							regionList.push(regObj);
+						}
+					}
+					regionList.sort((a, b) => b.frdCt - a.frdCt);
+					console.log('Got region list:');
+					console.log(regionList);
+				} else {
+					reject(new Error(`HTTP error ${xhr.status}`));
 				}
 			};
 			xhr.onerror = function () {
-				reject(this);
+				reject(new Error("Network error"));
 			};
-			xhr.send(form);
+			xhr.send();
 		});
-	};
+	}
 
-	let xhr = new XMLHttpRequest();
-	xhr.open(
-		"POST", `https://www.mousehuntgame.com/managers/ajax/pages/page.php?page_class=Travel&uh=${user.unique_hash}`);
-	xhr.onload = function () {
-		let regions = JSON.parse(xhr.responseText).page.tabs[0].regions;
-		getRegionList(regions);
-	};
-	xhr.send();
+	// function postReq(url, form) {
+	// 	return new Promise((resolve, reject) => {
+	// 		const xhr = new XMLHttpRequest();
+	// 		xhr.open("POST", url, true);
+	// 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	// 		xhr.onreadystatechange = function () {
+	// 			if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+	// 				resolve(this);
+	// 			}
+	// 		};
+	// 		xhr.onerror = function () {
+	// 			reject(this);
+	// 		};
+	// 		xhr.send(form);
+	// 	});
+	// };
+
+	addButton();
 
 	const campButton = document.querySelector('.camp .mousehuntHud-menu-item.root');
 	campButton.onclick = (()=>{
 		setTimeout(()=>{
 			addButton();
-		},1000)
+		},3000)
 	});
 })();
 
 
-// Hunter ID quick-nav
+/*// Hunter ID quick-nav
 (function hunterIdNav() {
 	document
 		.querySelectorAll(".tsitu-hunter-id-nav")
@@ -279,7 +302,7 @@
 		header.parentElement.querySelector('.premiumShop').remove();
 	}
 })();
-
+*/
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
